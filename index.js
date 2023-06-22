@@ -6,6 +6,24 @@ const port = 3000;
 
 app.use(express.json());
 
+//Get list of products
+app.get('/getproducts', (req, res) => {
+  const url = 'https://6575f0a7772ffd0451fa76663b5fa119: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@korestore3.myshopify.com/admin/api/2022-04/products.json';
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Shopify-Storefront-Access-Token': '25e25dc74c777658b861b823346ea7f6'
+  };
+  
+  axios.get(url, { headers })
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      console.error('Error:', error.message);
+      res.status(500).send('An error occurred');
+    });
+});
+
 //Create a cart
 app.post('/cartcreation/:productId', (req, res) => {
   const productId = req.params.productId;
