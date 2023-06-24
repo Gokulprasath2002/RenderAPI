@@ -3,15 +3,17 @@ const axios = require('axios');
 
 const app = express();
 const port = 3000;
-
+const adminApiAccessToken = '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';
+const storeFrontAccessToken = '25e25dc74c777658b861b823346ea7f6';
+const domain = 'korestore3.myshopify.com';
 app.use(express.json());
 
 //Get list of products
 app.get('/getproducts', (req, res) => {
-  const url = 'https://6575f0a7772ffd0451fa76663b5fa119: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@korestore3.myshopify.com/admin/api/2022-04/products.json';
+  const url = `https://${domain}/admin/api/2022-04/products.json`;
   const headers = {
     'Content-Type': 'application/json',
-    'X-Shopify-Storefront-Access-Token': '25e25dc74c777658b861b823346ea7f6'
+    'X-Shopify-Access-Token': adminApiAccessToken
   };
   
   axios.get(url, { headers })
@@ -27,11 +29,11 @@ app.get('/getproducts', (req, res) => {
 //Create a cart
 app.post('/cartcreation/:productId', (req, res) => {
   const productId = req.params.productId;
-  const URL = "gid://shopify/ProductVariant/"+productId;
-  const endpoint = 'https://korestore3.myshopify.com/api/2022-04/graphql.json';
+  const createCartURL = "gid://shopify/ProductVariant/"+productId;
+  const endpoint = `https://${domain}/api/2022-04/graphql.json`;
   const headers = {
     'Content-Type': 'application/json',
-    'X-Shopify-Storefront-Access-Token': '25e25dc74c777658b861b823346ea7f6'
+    'X-Shopify-Storefront-Access-Token': storeFrontAccessToken
   };
 
   const body = {
@@ -42,7 +44,7 @@ app.post('/cartcreation/:productId', (req, res) => {
             lines: [
               {
                 quantity: 1
-                merchandiseId: "${URL}"
+                merchandiseId: "${createCartURL}"
               }
             ],
             buyerIdentity: {
@@ -94,18 +96,12 @@ app.post('/cartcreation/:productId', (req, res) => {
     });
 });
 
-
-
-
-
-
-
 //View the cart
 app.get('/lineitems', (req, res) => {
-  const endpoint = 'https://korestore3.myshopify.com/api/2022-04/graphql.json';
+  const endpoint = `https://${domain}/api/2022-04/graphql.json`;
   const headers = {
     'Content-Type': 'application/json',
-    'X-Shopify-Storefront-Access-Token': '25e25dc74c777658b861b823346ea7f6'
+    'X-Shopify-Storefront-Access-Token': storeFrontAccessToken
   };
 
   const body = {
@@ -145,16 +141,56 @@ app.get('/lineitems', (req, res) => {
     });
 });
 
+//checkout
+app.post('/checkout/:productId', (req, res) => {
+  const productId = req.params.productId;
+  const checkoutURL = "gid://shopify/ProductVariant/"+productId;
+  const endpoint = `https://${domain}/api/2022-04/graphql.json`;
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Shopify-Storefront-Access-Token': storeFrontAccessToken
+  };
 
+  const body = {
+    query: `
+    mutation {
+      checkoutCreate(input: {
+        lineItems: [
+          {
+            variantId: "${checkoutURL}",
+            quantity: 1
+          }
+        ],
+        email: "mike@eznet.com",
+        shippingAddress: {
+          firstName: "Johnny",
+          lastName: "Applesead",
+          address1: "13506 E Farwell Rd",
+          address2: "",
+          city: "Spokane",
+          province: "Washington",
+          country: "United States",
+          zip: "99217"
+        }
+      }) {
+        checkout {
+          id
+          webUrl
+        }
+      }
+    }
+    `
+  };
 
-
-
-
-
-
-
-
-
+  axios.post(endpoint, body, { headers })
+    .then(response => {
+      res.json(response.data);
+    })
+    .catch(error => {
+      console.error(error);
+      res.status(500).json({ error: 'An error occurred' });
+    });
+});
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
