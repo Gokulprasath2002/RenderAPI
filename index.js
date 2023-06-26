@@ -6,6 +6,9 @@ const port = 3000;
 const adminApiAccessToken = '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';
 const storeFrontAccessToken = '25e25dc74c777658b861b823346ea7f6';
 const domain = 'korestore3.myshopify.com';
+
+
+
 app.use(express.json());
 
 //Get list of products
@@ -97,7 +100,8 @@ app.post('/cartcreation/:productId', (req, res) => {
 });
 
 //View the cart
-app.get('/lineitems', (req, res) => {
+app.get('/lineitems/:cartUrl', (req, res) => {
+  const cartUrl = req.params.cartUrl;
   const endpoint = `https://${domain}/api/2022-04/graphql.json`;
   const headers = {
     'Content-Type': 'application/json',
@@ -107,7 +111,7 @@ app.get('/lineitems', (req, res) => {
   const body = {
     query: `
       query {
-        cart(id: "gid://shopify/Cart/c1-689592e35a508a23e5baebd06fd0d016") {
+        cart(id: "gid://shopify/Cart/${cartUrl}") {
           lines(first: 10) {
             edges {
               node {
