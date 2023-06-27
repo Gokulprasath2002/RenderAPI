@@ -201,8 +201,9 @@ app.post('/checkout/:productId', (req, res) => {
 
 //view orders
 //Get list of products
-app.get('/getorders', (req, res) => {
-  const url = `https://${domain}/admin/api/2022-04/orders.json?`;
+app.get('/getorders/:checkoutToken', (req, res) => {
+  const checkoutToken = req.params.checkoutToken;
+  const url = `https://${domain}/admin/api/2022-04/orders.json?checkout_token=${checkoutToken}`;
   const headers = {
     'Content-Type': 'application/json',
     'X-Shopify-Access-Token': adminApiAccessToken
