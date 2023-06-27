@@ -196,6 +196,29 @@ app.post('/checkout/:productId', (req, res) => {
     });
 });
 
+
+
+
+//view orders
+//Get list of products
+app.get('/getorders/:checkoutToken', (req, res) => {
+  const checkoutToken = req.params.checkoutToken;
+  const url = `https://${domain}/admin/api/2022-04/orders.json?checkout_token=${checkoutToken}`;
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Shopify-Access-Token': adminApiAccessToken
+  };
+  
+  axios.get(url, { headers })
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      console.error('Error:', error.message);
+      res.status(500).send('An error occurred');
+    });
+});
+
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
